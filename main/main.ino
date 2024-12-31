@@ -1,8 +1,8 @@
 #include <util/atomic.h>
 
 
-
-
+float P = 6.0;
+float MAX_P = 7.1;
 
 
 // A class to compute the control signal
@@ -32,7 +32,7 @@ class SimplePID{
     eintegral = eintegral + e*deltaT;
   
     // control signal
-    float u = kp*e + kd*dedt + ki*eintegral;
+    float u = P*e + kd*dedt + ki*eintegral;
   
     // motor power
     pwr = (int) fabs(u);
@@ -74,170 +74,22 @@ float target_f[] = {0.0,0.0};
 long target[] = {0,0};
 
 int direction = 0;
-
+float positionChange[2] = {0, 0};
+float g_time;
+float g_velocity = 0.1; // m/s
+float l_time = 0;
+float pulsesPerTurn = 960;
+float pulsesPerMeter = pulsesPerTurn*3.9788;
+float deltaT;
 void setTarget(float t, float deltat){
   
-  float positionChange[2] = {0, 0};
-  float pulsesPerTurn = 960;
-  float pulsesPerMeter = pulsesPerTurn*3.9788;
+  
 
-  t = fmod(t,124); // time is in seconds
-  float velocity = 0.16; // m/s
-  if(t < 3){
-    
-  }else if(t<4.9625){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<5.286475){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<8.411475){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<8.73545){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<11.86045){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<12.184425000000001){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<18.434425){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<18.7584){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<21.8834){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<22.207375000000003){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<23.394875000000003){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<24.482375){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<24.806350000000002){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<34.18135){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<34.505325){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<40.755325){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<41.079299999999996){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<44.204299999999996){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<44.528274999999994){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<47.653274999999994){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<47.97724999999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<49.16474999999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<50.25224999999999){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<50.57622499999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<53.70122499999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<54.025199999999984){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<60.275199999999984){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<60.59917499999998){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<63.72417499999998){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<64.04814999999998){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<65.23564999999998){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<66.32314999999998){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<66.64712499999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<69.77212499999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<70.09609999999999){
-positionChange[0] = -(velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<79.47109999999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else if(t<79.795075){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = -(velocity)*deltat*pulsesPerMeter;
-}
-else if(t<85.64507499999999){
-positionChange[0] = (velocity)*deltat*pulsesPerMeter;
-positionChange[1] = (velocity)*deltat*pulsesPerMeter;
-}
-else{}
+
+  g_time = fmod(t,124); // time is in seconds
+  Halt(3);
+  Forward(10);
+  Backward(10);
 
 
 
@@ -282,7 +134,7 @@ void loop() {
 
   // time difference
   long currT = micros();
-  float deltaT = ((float) (currT - prevT))/( 1.0e6 );
+  deltaT = ((float) (currT - prevT))/( 1.0e6 );
   prevT = currT;
 
   //yo
@@ -316,7 +168,14 @@ void loop() {
   }
   //Serial.println();
 
-
+  // if(abs(target[0]-pos[0])+abs(target[1]-pos[1])>5){
+  //   if (P < MAX_P){
+  //     P+=0.1;
+  //   }else{
+  //     P = MAX_P;
+  //   }
+    
+  // }
 
 
 
@@ -351,3 +210,55 @@ void readEncoder(){
     posi[j]--;
   }
 }
+
+void Halt(float time){
+  if(g_time<time+l_time && g_time > l_time){
+    positionChange[0] = 0;
+  positionChange[1] = 0;
+  }
+  l_time = time;
+}
+
+void Forward(float cm){
+float velocity = g_velocity*100;
+
+if(g_time<l_time+(cm/velocity) && g_time > l_time){
+  positionChange[0] = (g_velocity)*deltaT*pulsesPerMeter;
+  positionChange[1] = (g_velocity)*deltaT*pulsesPerMeter;
+}
+l_time = l_time+(cm/velocity);
+}
+
+void Backward(float cm){
+  float velocity = g_velocity*100;
+  
+if(g_time<l_time+(cm/velocity) && g_time > l_time){
+  positionChange[0] = -(g_velocity)*deltaT*pulsesPerMeter;
+  positionChange[1] = -(g_velocity)*deltaT*pulsesPerMeter;
+}
+l_time = l_time+(cm/velocity);
+}
+
+void Left(){
+float velocity = g_velocity*100;
+float cm = 5.184;
+if(g_time<l_time+(cm/velocity) && g_time > l_time){
+  positionChange[0] = (g_velocity)*deltaT*pulsesPerMeter;
+  positionChange[1] = -(g_velocity)*deltaT*pulsesPerMeter;
+}
+l_time = l_time+(cm/velocity);
+}
+
+void Right(){
+  float velocity = g_velocity*100;
+  float cm = 5.184;
+if(g_time<l_time+(cm/velocity) && g_time > l_time){
+  positionChange[0] = -(g_velocity)*deltaT*pulsesPerMeter;
+  positionChange[1] = (g_velocity)*deltaT*pulsesPerMeter;
+}
+l_time = l_time+(cm/velocity);
+
+}
+
+
+
