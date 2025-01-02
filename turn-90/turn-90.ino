@@ -96,6 +96,7 @@ void setTarget(float t, float deltat){
   l_time = 0;
    Halt(3);
   Right();
+  Halt(3);
    
 
 
@@ -327,7 +328,7 @@ l_time = move_time;
 
 void Left(){
 
-float cm = 5.184;
+float cm = 5.187;//orignal = 5.184
 
 
 
@@ -367,7 +368,7 @@ l_time = move_time;
 
 void Right(){
 
-  float cm = 5.184;
+  float cm = 5.187;
  
 
 

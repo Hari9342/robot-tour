@@ -95,85 +95,7 @@ void setTarget(float t, float deltat){
   g_time = fmod(t,124); // time is in seconds
   l_time = 0;
    Halt(3);
-  Forward(31.4);
-   Halt(0.1);
-Right();
- Halt(0.1);
-Forward(50);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(50);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(100);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(50);
- Halt(0.1);
-Right();
- Halt(0.1);
-Forward(19);
- Halt(0.1);
-//Gate A;
-Backward(19);
- Halt(0.1);
-Right();
- Halt(0.1);
-Forward(150);
- Halt(0.1);
-Right();
- Halt(0.1);
-Forward(100);
- Halt(0.1);
-//Gate C
-Right();
- Halt(0.1);
-Forward(50);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(50);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(19);
- Halt(0.1);
-//Gate D
-Backward(19);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(50);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(100);
- Halt(0.1);
-Left();
-Forward(50);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(19);
- Halt(0.1);
-//Gate B
-Backward(19);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(50);
- Halt(0.1);
-Right();
- Halt(0.1);
-Forward(150);
- Halt(0.1);
-Left();
- Halt(0.1);
-Forward(93.6);
- Halt(0.1);
+  Forward(50);
 
 
 
@@ -404,7 +326,7 @@ l_time = move_time;
 
 void Left(){
 
-float cm = 5.184;
+float cm = 5.3;
 
 
 
@@ -444,7 +366,7 @@ l_time = move_time;
 
 void Right(){
 
-  float cm = 5.184;
+ float cm = 5.3;
  
 
 
