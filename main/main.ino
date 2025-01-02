@@ -1,7 +1,7 @@
 #include <util/atomic.h>
 
 
-float P = 6.0;
+float P = 6;
 float MAX_P = 7.1;
 
 
@@ -32,7 +32,7 @@ class SimplePID{
     eintegral = eintegral + e*deltaT;
   
     // control signal
-    float u = P*e + kd*dedt + ki*eintegral;
+    float u = kp*e + kd*dedt + ki*eintegral;
   
     // motor power
     pwr = (int) fabs(u);
@@ -76,7 +76,7 @@ long target[] = {0,0};
 int direction = 0;
 float positionChange[2] = {0, 0};
 float g_time;
-float g_velocity = 0.1; // m/s
+float g_velocity = 0.16; // m/s
 float l_time = 0;
 float pulsesPerTurn = 960;
 float pulsesPerMeter = pulsesPerTurn*3.9788;
@@ -88,8 +88,48 @@ void setTarget(float t, float deltat){
 
   g_time = fmod(t,124); // time is in seconds
   Halt(3);
-  Forward(10);
-  Backward(10);
+  Forward(31.4);
+Right();
+Forward(50);
+Left();
+Forward(50);
+Left();
+Forward(100);
+Left();
+Forward(50);
+Right();
+Forward(19);
+//Gate A;
+Backward(19);
+Right();
+Forward(150);
+Right();
+Forward(100);
+//Gate C
+Right();
+Forward(50);
+Left();
+Forward(50);
+Left();
+Forward(19);
+//Gate D
+Backward(19);
+Left();
+Forward(50);
+Left();
+Forward(100);
+Left();
+Forward(50);
+Left();
+Forward(19);
+//Gate B
+Backward(19);
+Left();
+Forward(50);
+Right();
+Forward(150);
+Left();
+Forward(93.6);
 
 
 
@@ -105,7 +145,7 @@ void setTarget(float t, float deltat){
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(57600);
 
   for(int k = 0; k < NMOTORS; k++){
     pinMode(enca[k],INPUT);
@@ -116,8 +156,8 @@ void setup() {
 
     
   }
-  pid[0].setParams(5,0.5,0,255);
-  pid[1].setParams(4.3,0.5,0,255);
+  pid[0].setParams(5,0,0,255);
+  pid[1].setParams(5,0,0,255);
   attachInterrupt(digitalPinToInterrupt(enca[0]),readEncoder<0>,RISING);
   attachInterrupt(digitalPinToInterrupt(enca[1]),readEncoder<1>,RISING);
   
@@ -160,13 +200,15 @@ void loop() {
   for(int k = 0; k < NMOTORS; k++){
     //Serial.print("Target: ");
     //Serial.print(target[k]);
-    //Serial.print(" Real_Pos:");
-    //Serial.print(pos[k]);
     //Serial.print(" Error:");
     //Serial.print(abs(target[k]-pos[k]));
     //Serial.print(" ");
   }
-  //Serial.println();
+  Serial.print(" Real_Pos(1):");
+  Serial.print(abs(pos[0]));
+  Serial.print(" Real_Pos(2):");
+  Serial.print(abs(pos[1]));
+  Serial.println();
 
   // if(abs(target[0]-pos[0])+abs(target[1]-pos[1])>5){
   //   if (P < MAX_P){
@@ -219,44 +261,159 @@ void Halt(float time){
   l_time = time;
 }
 
-void Forward(float cm){
-float velocity = g_velocity*100;
 
-if(g_time<l_time+(cm/velocity) && g_time > l_time){
-  positionChange[0] = (g_velocity)*deltaT*pulsesPerMeter;
-  positionChange[1] = (g_velocity)*deltaT*pulsesPerMeter;
+
+
+float acc_time = 1;
+void Forward(float cm){
+  //acc_time = 0.4; //in seconds
+float velocity = g_velocity*100;
+float calc_velocity = 0;
+float acc = velocity/acc_time;
+// Distance = (1/2) * acceleration time * maximum velocity + (constant velocity * constant velocity time) + (1/2) * deceleration time * maximum velocity
+// Distance = acceleration time * maximum velocity + (constant velocity * constant velocity time)
+// Distance =   (acceleration time * maximum velocity) + (constant velocity * constant velocity time)
+//Distance - (acceleration time * maximum velocity) = (constant velocity * constant velocity time)
+//(Distance - (acceleration time * maximum velocity cm))/constant velocity cm = constant velocity time
+//10 cm / 16 cm/s
+float cv_time = (cm/velocity) - acc_time;
+float move_time = l_time+(cm/velocity)+acc_time;
+if(g_time<l_time+acc_time && g_time > l_time){
+  calc_velocity = acc*(g_time - l_time);
 }
-l_time = l_time+(cm/velocity);
+
+if(g_time<l_time+acc_time+cv_time && g_time > l_time+acc_time){
+  calc_velocity = velocity;
+}
+
+if(g_time<l_time+2*acc_time+cv_time && g_time >l_time+acc_time+cv_time){
+  calc_velocity = velocity - ((g_time - (l_time + acc_time + cv_time)) * acc);
+
+  //Serial.println(move_time);
+
+}
+if(g_time<move_time && g_time > l_time){
+  positionChange[0] = (abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+  positionChange[1] = (abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+}
+
+l_time = move_time;
+
 }
 
 void Backward(float cm){
-  float velocity = g_velocity*100;
-  
-if(g_time<l_time+(cm/velocity) && g_time > l_time){
-  positionChange[0] = -(g_velocity)*deltaT*pulsesPerMeter;
-  positionChange[1] = -(g_velocity)*deltaT*pulsesPerMeter;
+ //float acc_time = 0.4; //in seconds
+float velocity = g_velocity*100;
+float calc_velocity = 0;
+float acc = velocity/acc_time;
+// Distance = (1/2) * acceleration time * maximum velocity + (constant velocity * constant velocity time) + (1/2) * deceleration time * maximum velocity
+// Distance = acceleration time * maximum velocity + (constant velocity * constant velocity time)
+// Distance =   (acceleration time * maximum velocity) + (constant velocity * constant velocity time)
+//Distance - (acceleration time * maximum velocity) = (constant velocity * constant velocity time)
+//(Distance - (acceleration time * maximum velocity cm))/constant velocity cm = constant velocity time
+//10 cm / 16 cm/s
+float cv_time = (cm/velocity) - acc_time;
+float move_time = l_time+(cm/velocity)+acc_time;
+if(g_time<l_time+acc_time && g_time > l_time){
+  calc_velocity = acc*(g_time - l_time);
 }
-l_time = l_time+(cm/velocity);
+
+if(g_time<l_time+acc_time+cv_time && g_time > l_time+acc_time){
+  calc_velocity = velocity;
+}
+
+if(g_time<l_time+2*acc_time+cv_time && g_time >l_time+acc_time+cv_time){
+  calc_velocity = velocity - ((g_time - (l_time + acc_time + cv_time)) * acc);
+
+  //Serial.println(move_time);
+
+}
+if(g_time<move_time && g_time > l_time){
+  positionChange[0] = -(abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+  positionChange[1] = -(abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+}
+
+l_time = move_time;
 }
 
 void Left(){
-float velocity = g_velocity*100;
+
 float cm = 5.184;
-if(g_time<l_time+(cm/velocity) && g_time > l_time){
-  positionChange[0] = (g_velocity)*deltaT*pulsesPerMeter;
-  positionChange[1] = -(g_velocity)*deltaT*pulsesPerMeter;
+
+
+
+//float acc_time = 0.4; //in seconds
+float velocity = g_velocity*100;
+float calc_velocity = 0;
+float acc = velocity/acc_time;
+// Distance = (1/2) * acceleration time * maximum velocity + (constant velocity * constant velocity time) + (1/2) * deceleration time * maximum velocity
+// Distance = acceleration time * maximum velocity + (constant velocity * constant velocity time)
+// Distance =   (acceleration time * maximum velocity) + (constant velocity * constant velocity time)
+//Distance - (acceleration time * maximum velocity) = (constant velocity * constant velocity time)
+//(Distance - (acceleration time * maximum velocity cm))/constant velocity cm = constant velocity time
+//10 cm / 16 cm/s
+float cv_time = (cm/velocity) - acc_time;
+float move_time = l_time+(cm/velocity)+acc_time;
+if(g_time<l_time+acc_time && g_time > l_time){
+  calc_velocity = acc*(g_time - l_time);
 }
-l_time = l_time+(cm/velocity);
+
+if(g_time<l_time+acc_time+cv_time && g_time > l_time+acc_time){
+  calc_velocity = velocity;
+}
+
+if(g_time<l_time+2*acc_time+cv_time && g_time >l_time+acc_time+cv_time){
+  calc_velocity = velocity - ((g_time - (l_time + acc_time + cv_time)) * acc);
+
+  //Serial.println(move_time);
+
+}
+if(g_time<move_time && g_time > l_time){
+  positionChange[0] = (abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+  positionChange[1] = -(abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+}
+
+l_time = move_time;
 }
 
 void Right(){
-  float velocity = g_velocity*100;
+
   float cm = 5.184;
-if(g_time<l_time+(cm/velocity) && g_time > l_time){
-  positionChange[0] = -(g_velocity)*deltaT*pulsesPerMeter;
-  positionChange[1] = (g_velocity)*deltaT*pulsesPerMeter;
+ 
+
+
+ //float acc_time = 0.4; //in seconds
+float velocity = g_velocity*100;
+float calc_velocity = 0;
+float acc = velocity/acc_time;
+// Distance = (1/2) * acceleration time * maximum velocity + (constant velocity * constant velocity time) + (1/2) * deceleration time * maximum velocity
+// Distance = acceleration time * maximum velocity + (constant velocity * constant velocity time)
+// Distance =   (acceleration time * maximum velocity) + (constant velocity * constant velocity time)
+//Distance - (acceleration time * maximum velocity) = (constant velocity * constant velocity time)
+//(Distance - (acceleration time * maximum velocity cm))/constant velocity cm = constant velocity time
+//10 cm / 16 cm/s
+float cv_time = (cm/velocity) - acc_time;
+float move_time = l_time+(cm/velocity)+acc_time;
+if(g_time<l_time+acc_time && g_time > l_time){
+  calc_velocity = acc*(g_time - l_time);
 }
-l_time = l_time+(cm/velocity);
+
+if(g_time<l_time+acc_time+cv_time && g_time > l_time+acc_time){
+  calc_velocity = velocity;
+}
+
+if(g_time<l_time+2*acc_time+cv_time && g_time >l_time+acc_time+cv_time){
+  calc_velocity = velocity - ((g_time - (l_time + acc_time + cv_time)) * acc);
+
+  //Serial.println(move_time);
+
+}
+if(g_time<move_time && g_time > l_time){
+  positionChange[0] = -(abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+  positionChange[1] = (abs(calc_velocity)/100)*deltaT*pulsesPerMeter;
+}
+
+l_time = move_time;
 
 }
 
