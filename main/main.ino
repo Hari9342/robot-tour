@@ -156,8 +156,8 @@ void setup() {
 
     
   }
-  pid[0].setParams(5,0,0,255);
-  pid[1].setParams(5,0,0,255);
+  pid[0].setParams(5,0.5,0,255);
+  pid[1].setParams(5,0.5,0,255);
   attachInterrupt(digitalPinToInterrupt(enca[0]),readEncoder<0>,RISING);
   attachInterrupt(digitalPinToInterrupt(enca[1]),readEncoder<1>,RISING);
   
@@ -264,9 +264,9 @@ void Halt(float time){
 
 
 
-float acc_time = 1;
+
 void Forward(float cm){
-  //acc_time = 0.4; //in seconds
+  float acc_time = 0.4; //in seconds
 float velocity = g_velocity*100;
 float calc_velocity = 0;
 float acc = velocity/acc_time;
@@ -302,7 +302,7 @@ l_time = move_time;
 }
 
 void Backward(float cm){
- //float acc_time = 0.4; //in seconds
+ float acc_time = 0.4; //in seconds
 float velocity = g_velocity*100;
 float calc_velocity = 0;
 float acc = velocity/acc_time;
@@ -342,7 +342,7 @@ float cm = 5.184;
 
 
 
-//float acc_time = 0.4; //in seconds
+float acc_time = 0.4; //in seconds
 float velocity = g_velocity*100;
 float calc_velocity = 0;
 float acc = velocity/acc_time;
@@ -382,7 +382,7 @@ void Right(){
  
 
 
- //float acc_time = 0.4; //in seconds
+ float acc_time = 0.4; //in seconds
 float velocity = g_velocity*100;
 float calc_velocity = 0;
 float acc = velocity/acc_time;
